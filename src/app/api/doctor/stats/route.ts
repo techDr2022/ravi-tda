@@ -11,6 +11,8 @@ import { getAppointmentStats } from '@/lib/appointment-service';
 import prisma from '@/lib/prisma';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
