@@ -15,17 +15,37 @@
 /* Base Styles */
 html {
   scroll-behavior: smooth;
-  font-size: 13px; /* Further reduced */
+  font-size: 16px; /* Standard base font size for landing page */
 }
 
 @media (min-width: 640px) {
   html {
-    font-size: 14px;
+    font-size: 16px;
   }
 }
 
 @media (min-width: 1024px) {
   html {
+    font-size: 18px;
+  }
+}
+
+/* Dashboard-specific smaller font sizes */
+html.dashboard,
+html.dashboard body {
+  font-size: 13px;
+}
+
+@media (min-width: 640px) {
+  html.dashboard,
+  html.dashboard body {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html.dashboard,
+  html.dashboard body {
     font-size: 15px;
   }
 }
@@ -184,24 +204,46 @@ body {
   @apply inline-flex items-center gap-1 px-2 py-1 bg-white rounded-full shadow-healthcare border border-healthcare-border text-xs font-medium text-healthcare-text;
 }
 
-/* Responsive typography */
+/* Responsive typography - Landing page sizes */
 .heading-xl {
-  @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight;
+  @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight;
 }
 
 .heading-lg {
-  @apply text-lg sm:text-xl md:text-2xl font-bold tracking-tight;
+  @apply text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight;
 }
 
 .heading-md {
+  @apply text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight;
+}
+
+/* Dashboard-specific smaller headings */
+.dashboard .heading-xl {
+  @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight;
+}
+
+.dashboard .heading-lg {
+  @apply text-lg sm:text-xl md:text-2xl font-bold tracking-tight;
+}
+
+.dashboard .heading-md {
   @apply text-base sm:text-lg md:text-xl font-semibold tracking-tight;
 }
 
 .body-lg {
-  @apply text-xs sm:text-sm md:text-base text-healthcare-muted;
+  @apply text-sm sm:text-base md:text-lg text-healthcare-muted;
 }
 
 .body-md {
+  @apply text-sm sm:text-base text-healthcare-muted;
+}
+
+/* Dashboard-specific smaller body text */
+.dashboard .body-lg {
+  @apply text-xs sm:text-sm md:text-base text-healthcare-muted;
+}
+
+.dashboard .body-md {
   @apply text-xs sm:text-sm text-healthcare-muted;
 }
 
@@ -234,14 +276,27 @@ body {
 }
 
 .prose h2 {
-  @apply text-lg font-bold text-healthcare-text mt-6 mb-2 pb-1.5 border-b border-healthcare-border;
+  @apply text-2xl sm:text-3xl font-bold text-healthcare-text mt-6 mb-2 pb-1.5 border-b border-healthcare-border;
 }
 
 .prose h3 {
-  @apply text-base font-semibold text-healthcare-text mt-4 mb-1.5;
+  @apply text-xl sm:text-2xl font-semibold text-healthcare-text mt-4 mb-1.5;
 }
 
 .prose p {
+  @apply text-healthcare-muted leading-relaxed my-2 text-base;
+}
+
+/* Dashboard-specific smaller prose */
+.dashboard .prose h2 {
+  @apply text-lg font-bold text-healthcare-text mt-6 mb-2 pb-1.5 border-b border-healthcare-border;
+}
+
+.dashboard .prose h3 {
+  @apply text-base font-semibold text-healthcare-text mt-4 mb-1.5;
+}
+
+.dashboard .prose p {
   @apply text-healthcare-muted leading-relaxed my-2 text-sm;
 }
 

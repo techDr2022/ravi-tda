@@ -51,6 +51,14 @@ export default function DashboardLayout({
     }
   }, [status, router]);
 
+  // Add dashboard class to html element for styling
+  useEffect(() => {
+    document.documentElement.classList.add('dashboard');
+    return () => {
+      document.documentElement.classList.remove('dashboard');
+    };
+  }, []);
+
   // Check if user is on mobile
   useEffect(() => {
     const handleResize = () => {
