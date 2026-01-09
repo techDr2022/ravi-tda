@@ -2,26 +2,273 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom CSS Variables */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --foreground-rgb: 30, 41, 59;
+  --background-start-rgb: 248, 250, 250;
+  --background-end-rgb: 255, 255, 255;
+  --primary-color: #008080;
+  --secondary-color: #ff7040;
+  --accent-color: #1995e1;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Base Styles */
+html {
+  scroll-behavior: smooth;
+  font-size: 13px; /* Further reduced */
+}
+
+@media (min-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 15px;
   }
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+    180deg,
+    rgb(var(--background-start-rgb)) 0%,
+    rgb(var(--background-end-rgb)) 100%
+  );
+  min-height: 100vh;
+  line-height: 1.4;
 }
 
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Utility Classes */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+  
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-accent-500;
+  }
+  
+  .bg-glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+  
+  .section-padding {
+    @apply py-6 md:py-10 lg:py-12;
+  }
+  
+  .container-padding {
+    @apply px-3 sm:px-4 lg:px-5;
+  }
+}
+
+/* Global input/select/textarea size reduction */
+@layer base {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="password"],
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    @apply text-sm;
+  }
+}
+
+/* Reduce spacing in common patterns */
+@layer utilities {
+  /* Smaller gaps */
+  .gap-compact {
+    @apply gap-2;
+  }
+  
+  /* Smaller card padding */
+  .card-padding {
+    @apply p-4 md:p-5;
+  }
+  
+  /* Compact form spacing */
+  .form-spacing {
+    @apply space-y-3;
+  }
+}
+
+/* Animation Delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
+.delay-800 { animation-delay: 800ms; }
+
+/* Focus styles for accessibility */
+*:focus-visible {
+  @apply outline-2 outline-offset-2 outline-primary-500;
+}
+
+/* Selection color */
+::selection {
+  @apply bg-primary-100 text-primary-900;
+}
+
+/* Healthcare-specific patterns */
+.pattern-dots {
+  background-image: radial-gradient(rgba(0, 128, 128, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.pattern-grid {
+  background-image: 
+    linear-gradient(rgba(0, 128, 128, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 128, 128, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Smooth transitions for interactive elements */
+.interactive {
+  @apply transition-all duration-200 ease-out;
+}
+
+/* Card hover effect */
+.card-lift {
+  @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-card-hover;
+}
+
+/* Gradient borders */
+.gradient-border {
+  position: relative;
+  background: white;
+  border-radius: 8px;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  padding: 1px;
+  background: linear-gradient(135deg, #008080, #1995e1);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+}
+
+/* Healthcare badge */
+.trust-badge {
+  @apply inline-flex items-center gap-1 px-2 py-1 bg-white rounded-full shadow-healthcare border border-healthcare-border text-xs font-medium text-healthcare-text;
+}
+
+/* Responsive typography */
+.heading-xl {
+  @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight;
+}
+
+.heading-lg {
+  @apply text-lg sm:text-xl md:text-2xl font-bold tracking-tight;
+}
+
+.heading-md {
+  @apply text-base sm:text-lg md:text-xl font-semibold tracking-tight;
+}
+
+.body-lg {
+  @apply text-xs sm:text-sm md:text-base text-healthcare-muted;
+}
+
+.body-md {
+  @apply text-xs sm:text-sm text-healthcare-muted;
+}
+
+/* Blog Content Prose Customization */
+.prose pre {
+  @apply bg-slate-900 text-slate-100 rounded-lg p-2 sm:p-3 overflow-x-auto text-xs leading-relaxed my-3;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.prose pre code {
+  @apply bg-transparent p-0 text-inherit;
+}
+
+.prose ul {
+  @apply list-disc pl-4 space-y-1 my-2;
+}
+
+.prose ol {
+  @apply list-decimal pl-4 space-y-1 my-2;
+}
+
+.prose li {
+  @apply text-healthcare-muted;
+}
+
+.prose li strong {
+  @apply text-healthcare-text;
+}
+
+.prose h2 {
+  @apply text-lg font-bold text-healthcare-text mt-6 mb-2 pb-1.5 border-b border-healthcare-border;
+}
+
+.prose h3 {
+  @apply text-base font-semibold text-healthcare-text mt-4 mb-1.5;
+}
+
+.prose p {
+  @apply text-healthcare-muted leading-relaxed my-2 text-sm;
+}
+
+.prose a {
+  @apply text-primary-600 hover:text-primary-700 underline underline-offset-2 transition-colors;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-primary-500 pl-2.5 py-1 my-3 bg-primary-50/50 rounded-r-lg italic text-healthcare-muted text-sm;
+}
+
+.prose table {
+  @apply w-full my-3 border-collapse text-sm;
+}
+
+.prose th {
+  @apply bg-slate-100 text-left p-1.5 font-semibold text-healthcare-text border border-healthcare-border text-xs;
+}
+
+.prose td {
+  @apply p-1.5 border border-healthcare-border text-healthcare-muted text-xs;
+}
+
+.prose img {
+  @apply rounded-lg my-3;
+}
+
+.prose hr {
+  @apply my-4 border-healthcare-border;
 }
