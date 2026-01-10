@@ -1,26 +1,38 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Calendar, Clock, MapPin, Tag, ArrowRight, Globe, Search } from 'lucide-react';
 import { Container } from '@/components/ui/Container';
 import { BLOG_POSTS, getAllRegions, BLOG_CATEGORIES } from '@/lib/blog-data';
 import { SITE_CONFIG } from '@/lib/constants';
 
+/**
+ * Blog Page SEO Metadata
+ * Optimised for healthcare blog and content marketing keywords
+ * Title: 55-60 characters, Description: 150-160 characters (British English)
+ */
 export const metadata: Metadata = {
-  title: 'Healthcare Appointment Booking Blog | Global Insights & Best Practices',
-  description: 'Expert insights on healthcare appointment scheduling, clinic management, and digital transformation. Learn best practices from healthcare providers across USA, UK, Europe, Middle East, Asia, and Africa.',
+  title: 'Healthcare Appointment Booking Blog, Clinic Management Tips',
+  description: 'Expert insights on healthcare appointment scheduling, clinic management, and digital transformation. Learn best practices from providers worldwide.',
   keywords: [
-    'healthcare blog',
+    'healthcare appointment booking blog',
     'clinic management tips',
     'appointment booking best practices',
     'medical scheduling insights',
     'healthcare technology trends',
-    'global healthcare',
+    'clinic software guides',
+    'doctor appointment system tips',
   ],
   openGraph: {
-    title: 'TDAppointments Blog - Healthcare Booking Insights',
-    description: 'Expert insights on healthcare appointment scheduling from around the world.',
+    title: 'Healthcare Appointment Booking Blog, Clinic Management Tips',
+    description: 'Expert insights on healthcare appointment scheduling, clinic management, and digital transformation. Learn best practices from providers worldwide.',
     type: 'website',
     url: `${SITE_CONFIG.url}/blog`,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Healthcare Appointment Booking Blog, Clinic Management Tips',
+    description: 'Expert insights on healthcare appointment scheduling and clinic management best practices.',
   },
   alternates: {
     canonical: `${SITE_CONFIG.url}/blog`,
@@ -39,18 +51,28 @@ function BlogCard({ post, featured = false }: { post: typeof BLOG_POSTS[0]; feat
       <div className={`relative overflow-hidden bg-gradient-to-br from-primary-100 to-accent-100 ${
         featured ? 'h-64 md:h-full' : 'h-48'
       }`}>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Globe className={`text-primary-300 ${featured ? 'w-32 h-32' : 'w-20 h-20'}`} />
-        </div>
+        {post.image ? (
+          <Image
+            src={post.image}
+            alt={post.title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes={featured ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, 33vw"}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Globe className={`text-primary-300 ${featured ? 'w-32 h-32' : 'w-20 h-20'}`} />
+          </div>
+        )}
         {/* Region Badge */}
-        <div className="absolute top-4 left-4">
+        <div className="absolute top-4 left-4 z-10">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-primary-700">
             <MapPin className="w-3 h-3" />
             {post.region}
           </span>
         </div>
         {/* Category Badge */}
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-4 right-4 z-10">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-600/90 backdrop-blur-sm rounded-full text-xs font-medium text-white">
             {post.category}
           </span>

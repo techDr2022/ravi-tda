@@ -232,7 +232,7 @@ export function DashboardPreview() {
                         Payment Processing
                       </h4>
                       <p className="text-healthcare-muted max-w-md mx-auto">
-                        Razorpay-powered payments for teleconsultations. Auto-invoicing and 
+                        Secure gateway-powered transactions for teleconsultations. Auto-invoicing and 
                         reconciliation built-in.
                       </p>
                     </motion.div>

@@ -59,6 +59,22 @@ export default function DashboardLayout({
     };
   }, []);
 
+  // Add noindex meta tag for all dashboard pages (SEO: prevent indexing of internal app pages)
+  useEffect(() => {
+    const metaRobots = document.createElement('meta');
+    metaRobots.name = 'robots';
+    metaRobots.content = 'noindex, nofollow, noarchive, nosnippet';
+    document.head.appendChild(metaRobots);
+
+    return () => {
+      // Cleanup on unmount
+      const existing = document.querySelector('meta[name="robots"][content="noindex, nofollow, noarchive, nosnippet"]');
+      if (existing) {
+        existing.remove();
+      }
+    };
+  }, []);
+
   // Check if user is on mobile
   useEffect(() => {
     const handleResize = () => {

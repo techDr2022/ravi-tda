@@ -167,6 +167,11 @@ export const GET = withClinic(async (request, context, auth) => {
             paidAt: true,
           },
         },
+        prescription: {
+          select: {
+            id: true,
+          },
+        },
       },
       orderBy: [
         { date: 'asc' },
@@ -177,8 +182,37 @@ export const GET = withClinic(async (request, context, auth) => {
     }),
     prisma.appointment.count({ where: whereClause }),
   ]);
+
+  // Fetch latest message log status for each appointment (WhatsApp status)
+  const messageStatusMap = new Map();
+  if (appointments.length > 0) {
+    const appointmentIds = appointments.map(apt => apt.id);
+    const allMessageLogs = await prisma.messageLog.findMany({
+      where: {
+        appointmentId: { in: appointmentIds },
+      },
+      select: {
+        appointmentId: true,
+        status: true,
+        messageType: true,
+        deliveredAt: true,
+        readAt: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Create a map of appointmentId -> latest message status (keep only most recent per appointment)
+    for (const msg of allMessageLogs) {
+      if (msg.appointmentId && !messageStatusMap.has(msg.appointmentId)) {
+        messageStatusMap.set(msg.appointmentId, msg);
+      }
+    }
+  }
   
-  // Filter financial data based on role
+  // Filter financial data based on role and enrich with message status
   const filteredAppointments = filterResponseArray(
     appointments.map(apt => ({
       ...apt,
@@ -192,6 +226,10 @@ export const GET = withClinic(async (request, context, auth) => {
         ...apt.payment,
         amount: apt.payment.amount ? Number(apt.payment.amount) : null,
       } : null,
+      // Add prescription status (boolean)
+      hasPrescription: !!apt.prescription,
+      // Add latest WhatsApp message status
+      latestMessage: messageStatusMap.get(apt.id) || null,
     })),
     auth.clinic.role,
     'appointment'
@@ -430,6 +468,169 @@ export const POST = withClinic(async (request, context, auth) => {
     console.error('Failed to create appointment:', error);
     return NextResponse.json(
       { error: 'Failed to create appointment' },
+      { status: 500 }
+    );
+  }
+});
+
+// ============================================================================
+// PUT/PATCH - Update Appointment Status
+// ============================================================================
+
+const UpdateAppointmentSchema = z.object({
+  appointmentId: z.string(),
+  status: z.enum(['PENDING', 'CONFIRMED', 'CHECKED_IN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'RESCHEDULED']).optional(),
+  notes: z.string().optional(),
+  reason: z.string().optional(),
+});
+
+export const PUT = withClinic(async (request, context, auth) => {
+  return PATCH(request, context, auth);
+});
+
+export const PATCH = withClinic(async (request, context, auth) => {
+  // Check permission
+  if (!hasPermission(auth.clinic.role, Permission.APPOINTMENT_UPDATE)) {
+    return NextResponse.json(
+      { error: 'Permission denied: Cannot update appointments' },
+      { status: 403 }
+    );
+  }
+  
+  const body = await request.json();
+  
+  // Validate request body
+  const parseResult = UpdateAppointmentSchema.safeParse(body);
+  if (!parseResult.success) {
+    return NextResponse.json(
+      { error: 'Invalid request body', details: parseResult.error.issues },
+      { status: 400 }
+    );
+  }
+  
+  const { appointmentId, status, notes, reason } = parseResult.data;
+  
+  try {
+    // Verify appointment belongs to clinic
+    const appointment = await prisma.appointment.findFirst({
+      where: {
+        id: appointmentId,
+        clinicId: auth.clinic.clinicId,
+      },
+    });
+    
+    if (!appointment) {
+      return NextResponse.json(
+        { error: 'Appointment not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Update appointment
+    const updateData: Record<string, unknown> = {};
+    
+    if (status) {
+      updateData.status = status;
+      
+      // Update relevant timestamps
+      if (status === 'CONFIRMED' && !appointment.confirmedAt) {
+        updateData.confirmedAt = new Date();
+      } else if (status === 'COMPLETED' && !appointment.completedAt) {
+        updateData.completedAt = new Date();
+      } else if (status === 'CANCELLED' && !appointment.cancelledAt) {
+        updateData.cancelledAt = new Date();
+        if (reason) {
+          updateData.cancellationReason = reason;
+        }
+      }
+    }
+    
+    if (notes !== undefined) {
+      updateData.notes = notes;
+    }
+    
+    const updatedAppointment = await prisma.appointment.update({
+      where: { id: appointmentId },
+      data: updateData,
+      include: {
+        patient: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            email: true,
+            source: true,
+          },
+        },
+        consultationType: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            duration: true,
+            fee: true,
+          },
+        },
+        payment: {
+          select: {
+            id: true,
+            status: true,
+            paymentType: true,
+            amount: true,
+            paidAt: true,
+          },
+        },
+        prescription: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+    
+    // Create audit log
+    await createAuditLog({
+      clinicId: auth.clinic.clinicId,
+      entityType: 'Appointment',
+      entityId: appointmentId,
+      action: 'UPDATE',
+      changes: {
+        status: status || undefined,
+        notes: notes !== undefined ? (notes ? 'updated' : 'cleared') : undefined,
+      },
+      performedById: auth.user.id,
+      performedByRole: auth.clinic.role,
+      ...getRequestMetadata(request),
+    });
+    
+    // Filter response based on role
+    const response = filterResponseData(
+      {
+        ...updatedAppointment,
+        fee: updatedAppointment.fee ? Number(updatedAppointment.fee) : null,
+        hasPrescription: !!updatedAppointment.prescription,
+        consultationType: updatedAppointment.consultationType ? {
+          ...updatedAppointment.consultationType,
+          fee: updatedAppointment.consultationType.fee ? Number(updatedAppointment.consultationType.fee) : null,
+        } : null,
+        payment: updatedAppointment.payment ? {
+          ...updatedAppointment.payment,
+          amount: updatedAppointment.payment.amount ? Number(updatedAppointment.payment.amount) : null,
+        } : null,
+      },
+      auth.clinic.role,
+      'appointment'
+    );
+    
+    return NextResponse.json({
+      message: 'Appointment updated successfully',
+      appointment: response,
+    });
+    
+  } catch (error) {
+    console.error('Failed to update appointment:', error);
+    return NextResponse.json(
+      { error: 'Failed to update appointment' },
       { status: 500 }
     );
   }

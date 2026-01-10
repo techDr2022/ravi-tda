@@ -3,19 +3,34 @@ import { Pricing, FAQ, FinalCTA } from '@/components/sections';
 import { Container } from '@/components/ui/Container';
 import { SITE_CONFIG } from '@/lib/constants';
 
-// Page-specific SEO metadata
+/**
+ * Pricing Page SEO Metadata
+ * Optimised for pricing and subscription keywords
+ * Title: 55-60 characters, Description: 150-160 characters (British English)
+ */
 export const metadata: Metadata = {
-  title: 'Pricing - Affordable Healthcare Booking Plans',
-  description:
-    'Simple, transparent pricing for TDAppointments. Choose from Basic (₹2,999/mo), Professional (₹5,999/mo), or Enterprise (₹9,999/mo). Start with a 14-day free trial.',
+  title: 'Pricing: Clinic Appointment Software Plans & Pricing',
+  description: 'Simple, transparent pricing for clinic appointment booking software. Plans from ₹7,999/year. Start with a 14-day free trial. No credit card required.',
+  keywords: [
+    'clinic appointment software pricing',
+    'healthcare booking system cost',
+    'doctor appointment software price',
+    'clinic management software plans',
+    'appointment booking SaaS pricing India',
+  ],
   alternates: {
     canonical: `${SITE_CONFIG.url}/pricing`,
   },
   openGraph: {
-    title: 'TDAppointments Pricing - Affordable Healthcare Booking Plans',
-    description:
-      'Simple, transparent pricing for TDAppointments. Start with a 14-day free trial. No credit card required.',
+    title: 'TDAppointments Pricing: Clinic Appointment Software Plans',
+    description: 'Simple, transparent pricing for clinic appointment booking software. Plans from ₹7,999/year. Start with a 14-day free trial.',
     url: `${SITE_CONFIG.url}/pricing`,
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Pricing: Clinic Appointment Software Plans & Pricing',
+    description: 'Simple, transparent pricing for clinic appointment booking software. Plans from ₹7,999/year.',
   },
 };
 
@@ -43,26 +58,30 @@ export default function PricingPage() {
               {
                 '@type': 'Offer',
                 name: 'Basic Plan',
-                price: '2999',
+                price: '7999',
                 priceCurrency: 'INR',
                 priceValidUntil: '2025-12-31',
                 availability: 'https://schema.org/InStock',
+                priceSpecification: {
+                  '@type': 'UnitPriceSpecification',
+                  price: '7999',
+                  priceCurrency: 'INR',
+                  valueAddedTaxIncluded: false,
+                },
               },
               {
                 '@type': 'Offer',
                 name: 'Professional Plan',
-                price: '5999',
+                price: '12999',
                 priceCurrency: 'INR',
                 priceValidUntil: '2025-12-31',
                 availability: 'https://schema.org/InStock',
-              },
-              {
-                '@type': 'Offer',
-                name: 'Enterprise Plan',
-                price: '9999',
-                priceCurrency: 'INR',
-                priceValidUntil: '2025-12-31',
-                availability: 'https://schema.org/InStock',
+                priceSpecification: {
+                  '@type': 'UnitPriceSpecification',
+                  price: '12999',
+                  priceCurrency: 'INR',
+                  valueAddedTaxIncluded: false,
+                },
               },
             ],
           }),

@@ -42,7 +42,7 @@ export function Footer() {
       { label: 'Documentation', href: '/docs' },
       { label: 'API Reference', href: '/api' },
       { label: 'Status', href: '/status' },
-      { label: 'FAQs', href: '/#faq' },
+      { label: 'FAQs', href: '/faq' },
     ],
     legal: [
       { label: 'Privacy Policy', href: '/privacy' },
@@ -87,7 +87,7 @@ export function Footer() {
                 </div>
                 <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
                   <Award className="w-4 h-4 text-secondary-400" />
-                  <span className="text-xs text-slate-300">RWG Partner</span>
+                  <span className="text-xs text-slate-300">Google Partner</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
                   <Globe className="w-4 h-4 text-accent-400" />
@@ -173,22 +173,22 @@ export function Footer() {
             {/* Contact Info */}
             <div className="flex flex-wrap gap-6">
               <a
-                href="mailto:hello@tdappointments.com"
+                href="mailto:info@techdr.in"
                 className="flex items-center gap-2 text-slate-400 hover:text-white text-sm transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                hello@tdappointments.com
+                info@techdr.in
               </a>
               <a
-                href="tel:+919876543210"
+                href="tel:+919032292171"
                 className="flex items-center gap-2 text-slate-400 hover:text-white text-sm transition-colors"
               >
                 <Phone className="w-4 h-4" />
-                +91 98765 43210
+                +91 90322 92171
               </a>
               <span className="flex items-center gap-2 text-slate-400 text-sm">
                 <MapPin className="w-4 h-4" />
-                Hyderabad, India
+                India
               </span>
             </div>
 

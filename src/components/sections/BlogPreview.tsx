@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Calendar, Clock, MapPin, ArrowRight, Globe, BookOpen } from 'lucide-react';
 import { Container } from '@/components/ui/Container';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/ui/AnimatedSection';
@@ -12,8 +13,9 @@ import { BLOG_POSTS } from '@/lib/blog-data';
  * SEO-optimized with regional targeting
  */
 export function BlogPreview() {
-  // Get the 3 most recent posts
+  // Get the 3 most recent posts, excluding medical tourism blogs
   const recentPosts = BLOG_POSTS
+    .filter(post => !post.slug.includes('medical-tourism'))
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
     .slice(0, 3);
 
@@ -49,24 +51,34 @@ export function BlogPreview() {
               >
                 {/* Image */}
                 <div className="relative h-48 bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <motion.div
-                      initial={{ scale: 1 }}
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <Globe className="w-20 h-20 text-primary-300" />
-                    </motion.div>
-                  </div>
+                  {post.image ? (
+                    <Image
+                      src={post.image}
+                      alt={post.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        initial={{ scale: 1 }}
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Globe className="w-20 h-20 text-primary-300" />
+                      </motion.div>
+                    </div>
+                  )}
                   {/* Region Badge */}
-                  <div className="absolute top-4 left-4">
+                  <div className="absolute top-4 left-4 z-10">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-primary-700 shadow-sm">
                       <MapPin className="w-3 h-3" />
                       {post.region}
                     </span>
                   </div>
                   {/* Category Badge */}
-                  <div className="absolute top-4 right-4">
+                  <div className="absolute top-4 right-4 z-10">
                     <span className="inline-flex items-center px-3 py-1 bg-primary-600/90 backdrop-blur-sm rounded-full text-xs font-medium text-white">
                       {post.category}
                     </span>

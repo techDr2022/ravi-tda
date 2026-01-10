@@ -48,12 +48,13 @@ export interface HowItWorksStep {
 export interface PricingPlan {
   id: string;
   name: string;
-  price: number;
+  price: number | null;
   period: string;
   description: string;
   popular: boolean;
   features: string[];
   notIncluded: string[];
+  contactUs?: boolean;
 }
 
 export interface FAQItem {

@@ -190,6 +190,12 @@ export async function initializeRazorpayCheckout(
     return { success: false, error: 'Invalid plan selected' };
   }
 
+  // If Enterprise plan (contactUs), redirect to contact page
+  if (plan.contactUs || plan.price === null) {
+    window.location.href = '/contact';
+    return { success: false, error: 'Enterprise plan requires contacting sales' };
+  }
+
   // Create order on server
   let order: OrderResponse;
   try {

@@ -25,7 +25,7 @@ import { getClinicById, ClinicData } from '@/lib/clinic-store';
 const DEFAULT_CLINIC = {
   name: 'City Care Clinic',
   address: '123 Healthcare Street, Hyderabad, Telangana 500001',
-  phone: '+91 98765 43210',
+  phone: '+91 90322 92171',
   rating: 4.9,
   reviewCount: 245,
   doctors: [
@@ -531,7 +531,7 @@ export default function BookingPage() {
                         type="tel"
                         value={bookingData.patientPhone}
                         onChange={(e) => setBookingData({ ...bookingData, patientPhone: e.target.value })}
-                        placeholder="+91 98765 43210"
+                        placeholder="+91 90322 92171"
                         className="w-full pl-12 pr-4 py-3 rounded-xl border border-healthcare-border bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>

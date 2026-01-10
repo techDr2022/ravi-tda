@@ -282,8 +282,8 @@ MIT License - feel free to use for your own projects.
 
 ## 🤝 Support
 
-- Email: hello@tdappointments.com
-- Phone: +91 98765 43210
+- Email: info@techdr.in
+- Phone: +91 90322 92171
 - Twitter: [@tdappointments](https://twitter.com/tdappointments)
 
 ---

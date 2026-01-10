@@ -13,6 +13,9 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
+    // Optimise images for SEO and performance
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
   },
   eslint: {
     // Warning: This allows production builds to successfully complete even if
@@ -23,6 +26,46 @@ const nextConfig = {
     // Dangerously allow production builds to successfully complete even if
     // your project has type errors.
     ignoreBuildErrors: true,
+  },
+  // Security headers for SEO and security best practices
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+      {
+        // Force HTTPS for all pages
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
+          },
+        ],
+      },
+    ];
   },
 };
 

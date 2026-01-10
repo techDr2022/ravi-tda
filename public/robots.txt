@@ -1,0 +1,39 @@
+# TDAppointments - Robots.txt
+# Healthcare Appointment Booking SaaS
+# https://tdappointments.com
+
+User-agent: *
+Allow: /
+Allow: /pricing
+Allow: /blog
+Allow: /blog/*
+
+# Block internal application routes
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /dashboard/*
+Disallow: /login
+Disallow: /signup
+Disallow: /onboarding
+Disallow: /setup
+Disallow: /admin
+Disallow: /admin/*
+
+# Block authentication and private routes
+Disallow: /auth/
+Disallow: /auth/*
+Disallow: /book/
+Disallow: /book/*
+
+# Block prescription pages (patient-specific)
+Disallow: /prescription/
+Disallow: /prescription/*
+
+# Allow public booking pages (doctor-specific public pages)
+Allow: /[slug]
+
+# Sitemap location
+Sitemap: https://tdappointments.com/sitemap.xml
+
+# Crawl delay (optional, adjust based on server capacity)
+Crawl-delay: 1

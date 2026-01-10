@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, ArrowRight, Shield, Star, CheckCircle, AlertCircle } from 'lucide-react';
 import { Container } from '@/components/ui/Container';
@@ -20,6 +21,7 @@ type PaymentStatus = 'idle' | 'loading' | 'success' | 'error';
  * Integrated with Cashfree for subscription payments
  */
 export function Pricing({ showHeader = true }: PricingProps) {
+  const { data: session } = useSession();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('idle');
   const [paymentMessage, setPaymentMessage] = useState<string>('');
@@ -30,13 +32,23 @@ export function Pricing({ showHeader = true }: PricingProps) {
     setPaymentStatus('loading');
     setPaymentMessage('');
 
+    // Check if user is logged in - if not, redirect to signup/login
+    if (!session?.user) {
+      setPaymentStatus('error');
+      setPaymentMessage('Please sign in to subscribe. Redirecting to login...');
+      setTimeout(() => {
+        window.location.href = '/login?redirect=/pricing&plan=' + planId;
+      }, 2000);
+      return;
+    }
+
     try {
-      // Initialize Cashfree checkout
+      // Initialize Cashfree checkout with user info and clinicId if available
       const result: PaymentResult = await initializeCashfreeCheckout(planId, {
-        // You can prefill user info if available from auth context
-        // name: user?.name,
-        // email: user?.email,
-        // phone: user?.phone,
+        clinicId: session.user.clinicId,
+        name: session.user.name || undefined,
+        email: session.user.email || undefined,
+        phone: session.user.phone || undefined,
       });
 
       if (result.success) {
@@ -160,12 +172,25 @@ export function Pricing({ showHeader = true }: PricingProps) {
                       {plan.description}
                     </p>
                     <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-sm text-healthcare-muted">₹</span>
-                      <span className="text-4xl font-bold text-healthcare-text">
-                        {plan.price.toLocaleString()}
-                      </span>
-                      <span className="text-healthcare-muted">/{plan.period}</span>
+                      {plan.contactUs ? (
+                        <span className="text-2xl font-bold text-healthcare-text">
+                          Contact Us
+                        </span>
+                      ) : (
+                        <>
+                          <span className="text-sm text-healthcare-muted">₹</span>
+                          <span className="text-4xl font-bold text-healthcare-text">
+                            {plan.price?.toLocaleString()}
+                          </span>
+                          <span className="text-healthcare-muted">/{plan.period}</span>
+                        </>
+                      )}
                     </div>
+                    {!plan.contactUs && (
+                      <p className="text-xs text-healthcare-muted mt-1">
+                        excluding GST
+                      </p>
+                    )}
                   </div>
 
                   {/* Features List */}
@@ -191,24 +216,36 @@ export function Pricing({ showHeader = true }: PricingProps) {
                   </div>
 
                   {/* CTA Button */}
-                  <Button
-                    variant={plan.popular ? 'primary' : 'outline'}
-                    size="lg"
-                    fullWidth
-                    onClick={() => handleSubscribe(plan.id)}
-                    disabled={loadingPlan !== null || paymentStatus === 'success'}
-                    icon={loadingPlan === plan.id ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <ArrowRight className="w-5 h-5" />
-                    )}
-                  >
-                    {loadingPlan === plan.id 
-                      ? 'Processing...' 
-                      : paymentStatus === 'success' 
-                        ? 'Redirecting...'
-                        : 'Subscribe & Access Dashboard'}
-                  </Button>
+                  {plan.contactUs ? (
+                    <Button
+                      variant={plan.popular ? 'primary' : 'outline'}
+                      size="lg"
+                      fullWidth
+                      onClick={() => window.location.href = '/contact'}
+                      icon={<ArrowRight className="w-5 h-5" />}
+                    >
+                      Contact Sales
+                    </Button>
+                  ) : (
+                    <Button
+                      variant={plan.popular ? 'primary' : 'outline'}
+                      size="lg"
+                      fullWidth
+                      onClick={() => handleSubscribe(plan.id)}
+                      disabled={loadingPlan !== null || paymentStatus === 'success'}
+                      icon={loadingPlan === plan.id ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <ArrowRight className="w-5 h-5" />
+                      )}
+                    >
+                      {loadingPlan === plan.id 
+                        ? 'Processing...' 
+                        : paymentStatus === 'success' 
+                          ? 'Redirecting...'
+                          : 'Subscribe & Access Dashboard'}
+                    </Button>
+                  )}
 
                   {/* Trial Badge */}
                   <p className="text-center text-xs text-healthcare-muted mt-4">

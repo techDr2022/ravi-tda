@@ -12,7 +12,7 @@ interface LayoutWrapperProps {
 const EXCLUDED_ROUTES = ['/dashboard', '/login', '/signup', '/book', '/onboarding', '/setup'];
 
 // Marketing/known routes that SHOULD have header/footer
-const MARKETING_ROUTES = ['/', '/pricing', '/blog', '/about', '/contact', '/features', '/terms', '/privacy'];
+const MARKETING_ROUTES = ['/', '/pricing', '/blog', '/about', '/contact', '/features', '/terms', '/privacy', '/faq', '/hipaa', '/security', '/help', '/docs', '/api', '/status'];
 
 /**
  * LayoutWrapper - Conditionally renders Header and Footer

@@ -48,7 +48,7 @@ function GoogleIcon({ className }: { className?: string }) {
 
 /**
  * Signup Page Content - Registration with optional plan pre-selection
- * Includes Google OAuth and mock Razorpay subscription integration
+ * Includes Google OAuth and payment gateway subscription integration
  */
 function SignupContent() {
   const searchParams = useSearchParams();
@@ -103,9 +103,15 @@ function SignupContent() {
   };
 
   const handlePayment = async () => {
+    // If Enterprise plan, redirect to contact page
+    if (selectedPlan?.contactUs) {
+      window.location.href = '/contact';
+      return;
+    }
+
     setIsLoading(true);
 
-    // Simulate Razorpay checkout
+    // Simulate payment gateway checkout
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // On successful payment, redirect to dashboard
@@ -244,7 +250,7 @@ function SignupContent() {
                           name="phone"
                           value={formData.phone}
                           onChange={handleChange}
-                          placeholder="+91 98765 43210"
+                          placeholder="+91 90322 92171"
                           required
                           className="w-full pl-12 pr-4 py-3 rounded-xl border border-healthcare-border bg-slate-50 text-healthcare-text placeholder:text-healthcare-muted focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                         />
@@ -336,7 +342,7 @@ function SignupContent() {
                     >
                       {PRICING_PLANS.map((plan) => (
                         <option key={plan.id} value={plan.id}>
-                          {plan.name} - ₹{plan.price.toLocaleString()}/month
+                          {plan.name} - {plan.contactUs ? 'Contact Us' : `₹${plan.price?.toLocaleString()}/year`}
                         </option>
                       ))}
                     </select>
@@ -446,14 +452,22 @@ function SignupContent() {
                         {selectedPlan?.name} Plan
                       </h3>
                       <p className="text-sm text-healthcare-muted">
-                        14-day free trial, then billed monthly
+                        14-day free trial, then billed yearly
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-healthcare-text">
-                        ₹{selectedPlan?.price.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-healthcare-muted">/month</div>
+                      {selectedPlan?.contactUs ? (
+                        <div className="text-xl font-bold text-healthcare-text">
+                          Contact Us
+                        </div>
+                      ) : (
+                        <>
+                          <div className="text-2xl font-bold text-healthcare-text">
+                            ₹{selectedPlan?.price?.toLocaleString()}
+                          </div>
+                          <div className="text-sm text-healthcare-muted">/year (excluding GST)</div>
+                        </>
+                      )}
                     </div>
                   </div>
                   <ul className="space-y-2">
@@ -469,29 +483,41 @@ function SignupContent() {
                 <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl border border-green-200">
                   <Shield className="w-5 h-5 text-green-600" />
                   <p className="text-sm text-green-700">
-                    Secure payment powered by Razorpay. Cancel anytime.
+                    Secure transactions powered by our payment gateway. Cancel anytime.
                   </p>
                 </div>
 
-                <Button
-                  onClick={handlePayment}
-                  size="lg"
-                  fullWidth
-                  disabled={isLoading}
-                  icon={
-                    isLoading ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <ArrowRight className="w-5 h-5" />
-                    )
-                  }
-                >
-                  {isLoading ? 'Processing...' : 'Start Free Trial with Razorpay'}
-                </Button>
-
-                <p className="text-center text-xs text-healthcare-muted">
-                  You won't be charged during the 14-day trial period.
-                </p>
+                {selectedPlan?.contactUs ? (
+                  <Button
+                    onClick={handlePayment}
+                    size="lg"
+                    fullWidth
+                    icon={<ArrowRight className="w-5 h-5" />}
+                  >
+                    Contact Sales
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onClick={handlePayment}
+                      size="lg"
+                      fullWidth
+                      disabled={isLoading}
+                      icon={
+                        isLoading ? (
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <ArrowRight className="w-5 h-5" />
+                        )
+                      }
+                    >
+                      {isLoading ? 'Processing...' : 'Start Free Trial'}
+                    </Button>
+                    <p className="text-center text-xs text-healthcare-muted">
+                      You won't be charged during the 14-day trial period.
+                    </p>
+                  </>
+                )}
               </div>
             )}
 

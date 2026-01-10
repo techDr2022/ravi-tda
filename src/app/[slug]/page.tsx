@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar,
@@ -359,9 +360,11 @@ export default function BookingPage() {
           <div className="flex items-center gap-4">
             {/* Doctor Avatar */}
             {doctor.photo ? (
-              <img
+              <Image
                 src={doctor.photo}
-                alt={doctor.name}
+                alt={`${doctor.name}, ${doctor.specialization}${doctor.clinicName ? ` at ${doctor.clinicName}` : ''}${doctor.city ? ` in ${doctor.city}` : ''} - TDAppointments booking page`}
+                width={56}
+                height={56}
                 className="w-14 h-14 rounded-2xl object-cover shadow-md"
               />
             ) : (
@@ -840,7 +843,7 @@ export default function BookingPage() {
                         type="tel"
                         value={bookingData.patientPhone}
                         onChange={e => setBookingData(prev => ({ ...prev, patientPhone: e.target.value }))}
-                        placeholder="+91 98765 43210"
+                        placeholder="+91 90322 92171"
                         className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
                       />
                     </div>

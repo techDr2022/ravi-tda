@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Calendar, Clock, MapPin, Tag, ArrowLeft, ArrowRight, Share2, Linkedin, Twitter, Facebook, Globe, User } from 'lucide-react';
 import { Container } from '@/components/ui/Container';
@@ -24,14 +25,25 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     };
   }
 
+  // Ensure title is within 55-60 characters for SEO
+  // Truncate if necessary but preserve readability
+  const seoTitle = post.title.length > 60 
+    ? `${post.title.substring(0, 57)}...`
+    : post.title;
+
+  // Ensure description is within 150-160 characters for SEO
+  const seoDescription = post.excerpt.length > 160
+    ? `${post.excerpt.substring(0, 157)}...`
+    : post.excerpt;
+
   return {
-    title: post.title,
-    description: post.excerpt,
+    title: seoTitle,
+    description: seoDescription,
     keywords: post.seoKeywords,
     authors: [{ name: post.author.name }],
     openGraph: {
-      title: post.title,
-      description: post.excerpt,
+      title: seoTitle,
+      description: seoDescription,
       type: 'article',
       publishedTime: post.publishedAt,
       authors: [post.author.name],
@@ -48,8 +60,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     },
     twitter: {
       card: 'summary_large_image',
-      title: post.title,
-      description: post.excerpt,
+      title: seoTitle,
+      description: seoDescription,
     },
     alternates: {
       canonical: `${SITE_CONFIG.url}/blog/${post.slug}`,
@@ -62,10 +74,20 @@ function RelatedPostCard({ post }: { post: typeof BLOG_POSTS[0] }) {
   return (
     <article className="group bg-white rounded-xl border border-healthcare-border overflow-hidden hover:shadow-healthcare transition-all">
       <div className="relative h-32 bg-gradient-to-br from-primary-100 to-accent-100 overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Globe className="w-12 h-12 text-primary-300" />
-        </div>
-        <div className="absolute top-3 left-3">
+        {post.image ? (
+          <Image
+            src={post.image}
+            alt={post.title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 768px) 100vw, 33vw"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Globe className="w-12 h-12 text-primary-300" />
+          </div>
+        )}
+        <div className="absolute top-3 left-3 z-10">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-primary-700">
             <MapPin className="w-2.5 h-2.5" />
             {post.region}
@@ -215,6 +237,20 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               {post.region}
             </span>
           </div>
+
+          {/* Featured Image */}
+          {post.image && (
+            <div className="relative w-full h-64 md:h-96 rounded-2xl overflow-hidden mb-8">
+              <Image
+                src={post.image}
+                alt={post.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 1200px"
+                priority
+              />
+            </div>
+          )}
 
           {/* Title */}
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-healthcare-text leading-tight mb-6">

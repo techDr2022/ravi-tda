@@ -151,6 +151,23 @@ export default function DashboardHome() {
   // Get user name
   const userName = session?.user?.name?.split(' ')[0] || 'Doctor';
 
+  // Add noindex meta tag for dashboard pages
+  useEffect(() => {
+    // Add noindex meta tag
+    const metaRobots = document.createElement('meta');
+    metaRobots.name = 'robots';
+    metaRobots.content = 'noindex, nofollow, noarchive, nosnippet';
+    document.head.appendChild(metaRobots);
+
+    return () => {
+      // Cleanup on unmount
+      const existing = document.querySelector('meta[name="robots"]');
+      if (existing && existing.getAttribute('content') === 'noindex, nofollow, noarchive, nosnippet') {
+        existing.remove();
+      }
+    };
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Welcome Header */}

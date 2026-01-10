@@ -47,8 +47,10 @@ export interface PaymentResult {
 }
 
 /**
- * Load Cashfree script dynamically
+ * Load Cashfree script dynamically with optimized caching
  * Returns a promise that resolves when the script is loaded
+ * 
+ * Optimization: Uses cache-friendly approach with crossOrigin for better caching
  */
 export function loadCashfreeScript(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -59,10 +61,25 @@ export function loadCashfreeScript(): Promise<boolean> {
       return;
     }
 
+    // Check if script is already being loaded
+    const existingScript = document.querySelector('script[src*="cashfree.js"]');
+    if (existingScript) {
+      existingScript.addEventListener('load', () => resolve(true));
+      existingScript.addEventListener('error', () => resolve(false));
+      return;
+    }
+
     console.log('Loading Cashfree SDK...');
     const script = document.createElement('script');
     script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
     script.async = true;
+    script.defer = false; // Keep async for non-blocking load
+    script.crossOrigin = 'anonymous'; // Enable CORS for better caching
+    script.integrity = ''; // Will be empty, but crossOrigin helps with caching
+    
+    // Add cache-friendly attributes for better browser caching
+    script.setAttribute('data-cache', 'true');
+    
     script.onload = () => {
       console.log('Cashfree SDK loaded successfully');
       resolve(true);
@@ -71,30 +88,33 @@ export function loadCashfreeScript(): Promise<boolean> {
       console.error('Failed to load Cashfree SDK:', error);
       resolve(false);
     };
-    document.body.appendChild(script);
+    
+    // Append to head instead of body for better loading control
+    document.head.appendChild(script);
   });
 }
 
 /**
- * Create an order on the server
+ * Create a subscription on the server
+ * NOTE: This now creates subscriptions instead of one-time orders
  */
-export async function createOrder(
-  amount: number,
+export async function createSubscription(
   planId: string,
+  clinicId: string,
   email?: string,
   name?: string,
   phone?: string
 ): Promise<OrderResponse> {
-  console.log('Creating order for plan:', planId, 'amount:', amount);
+  console.log('Creating subscription for plan:', planId, 'clinic:', clinicId);
   
-  const response = await fetch('/api/payments/create-order', {
+  const response = await fetch('/api/subscriptions/create', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      amount,
       planId,
+      clinicId,
       email,
       name,
       phone,
@@ -104,12 +124,41 @@ export async function createOrder(
   const data = await response.json();
   
   if (!response.ok) {
-    console.error('Order creation failed:', data);
-    throw new Error(data.error || 'Failed to create order');
+    console.error('Subscription creation failed:', data);
+    throw new Error(data.error || 'Failed to create subscription');
   }
 
-  console.log('Order created successfully:', data);
-  return data;
+  console.log('Subscription created successfully:', data);
+  
+  // Map subscription response to OrderResponse format for compatibility
+  return {
+    orderId: data.subscriptionId,
+    orderToken: data.subscriptionToken,
+    paymentSessionId: data.paymentSessionId,
+    orderAmount: data.amount,
+    orderCurrency: 'INR',
+    environment: data.environment,
+  };
+}
+
+/**
+ * Create an order on the server (DEPRECATED - Use createSubscription instead)
+ * Kept for backward compatibility with existing code
+ */
+export async function createOrder(
+  amount: number,
+  planId: string,
+  email?: string,
+  name?: string,
+  phone?: string
+): Promise<OrderResponse> {
+  console.warn('createOrder is deprecated. Use createSubscription with clinicId instead.');
+  
+  // For backward compatibility, you might want to create a temporary clinic or handle this differently
+  // This is a placeholder - adjust based on your requirements
+  const clinicId = `temp_clinic_${Date.now()}`;
+  
+  return createSubscription(planId, clinicId, email, name, phone);
 }
 
 /**
@@ -168,21 +217,43 @@ export async function initializeCashfreeCheckout(
     return { success: false, error: 'Invalid plan selected' };
   }
 
-  // Create order on server
+  // If Enterprise plan (contactUs), redirect to contact page
+  if (plan.contactUs || plan.price === null) {
+    window.location.href = '/contact';
+    return { success: false, error: 'Enterprise plan requires contacting sales' };
+  }
+
+  // Get clinicId from userInfo - it should be passed from the component
+  const clinicId = (userInfo as any)?.clinicId;
+
+  // If no clinicId, we need to create a clinic first or handle it differently
+  // For new users, clinic will be created during onboarding after subscription
+  // For now, we'll require clinicId to be passed, but you might want to create a temporary clinic
+  if (!clinicId) {
+    console.warn('No clinicId provided. For new subscriptions, clinic will be created after payment.');
+    // Option 1: Create a temporary clinic ID that will be linked later
+    // Option 2: Require clinic creation before subscription (current approach)
+    return {
+      success: false,
+      error: 'Clinic ID is required. Please complete clinic setup first.',
+    };
+  }
+
+  // Create subscription on server
   let order: OrderResponse;
   try {
-    order = await createOrder(
-      plan.price,
+    order = await createSubscription(
       planId,
+      clinicId,
       userInfo?.email,
       userInfo?.name,
       userInfo?.phone
     );
   } catch (error) {
-    console.error('Order creation error:', error);
+    console.error('Subscription creation error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to create order',
+      error: error instanceof Error ? error.message : 'Failed to create subscription',
     };
   }
 

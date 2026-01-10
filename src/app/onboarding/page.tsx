@@ -305,7 +305,7 @@ function OnboardingContent() {
                       type="tel"
                       value={clinicData.phone}
                       onChange={(e) => setClinicData({ ...clinicData, phone: e.target.value })}
-                      placeholder="+91 98765 43210"
+                      placeholder="+91 90322 92171"
                       className="w-full px-4 py-3 rounded-xl border border-healthcare-border bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
