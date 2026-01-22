@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { PRICING_PLANS } from '@/lib/constants';
 
+// Force dynamic rendering since we use request.url
+export const dynamic = 'force-dynamic';
+
 /**
  * Get subscription status
  * GET /api/subscriptions/status?clinicId=xxx
