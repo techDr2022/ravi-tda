@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { PRICING_PLANS } from '@/lib/constants';
 
 /**
  * Get subscription status
@@ -40,6 +41,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get plan details from PRICING_PLANS to ensure consistency
+    const planDetails = PRICING_PLANS.find((p) => p.id === subscription.planId);
+    
     return NextResponse.json({
       subscription: {
         id: subscription.id,
@@ -58,6 +62,14 @@ export async function GET(request: NextRequest) {
         paymentFailureCount: subscription.paymentFailureCount,
         lastPaymentAt: subscription.lastPaymentAt?.toISOString(),
         clinic: subscription.clinic,
+        // Include plan details for frontend use
+        planDetails: planDetails ? {
+          id: planDetails.id,
+          name: planDetails.name,
+          price: planDetails.price,
+          period: planDetails.period,
+          features: planDetails.features,
+        } : null,
       },
     });
   } catch (error) {

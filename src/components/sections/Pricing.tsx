@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/ui/AnimatedSection';
 import { PRICING_PLANS } from '@/lib/constants';
 import { initializeCashfreeCheckout, PaymentResult } from '@/lib/cashfree';
+import { validatePlanId, getPlanDetails } from '@/lib/subscription-service';
 
 interface PricingProps {
   showHeader?: boolean;
@@ -32,6 +33,24 @@ export function Pricing({ showHeader = true }: PricingProps) {
     setPaymentStatus('loading');
     setPaymentMessage('');
 
+    // Validate plan ID first
+    if (!validatePlanId(planId)) {
+      const plan = getPlanDetails(planId);
+      if (plan?.contactUs || plan?.price === null) {
+        setPaymentStatus('error');
+        setPaymentMessage('Enterprise plan requires contacting sales. Redirecting...');
+        setTimeout(() => {
+          window.location.href = '/contact';
+        }, 2000);
+        setLoadingPlan(null);
+        return;
+      }
+      setPaymentStatus('error');
+      setPaymentMessage('Invalid plan selected. Please try again.');
+      setLoadingPlan(null);
+      return;
+    }
+
     // Check if user is logged in - if not, redirect to signup/login
     if (!session?.user) {
       setPaymentStatus('error');
@@ -39,6 +58,7 @@ export function Pricing({ showHeader = true }: PricingProps) {
       setTimeout(() => {
         window.location.href = '/login?redirect=/pricing&plan=' + planId;
       }, 2000);
+      setLoadingPlan(null);
       return;
     }
 
@@ -53,15 +73,19 @@ export function Pricing({ showHeader = true }: PricingProps) {
 
       if (result.success) {
         setPaymentStatus('success');
-        setPaymentMessage('Payment successful! Redirecting to your dashboard...');
+        setPaymentMessage('Subscription created successfully! Redirecting to your dashboard...');
         
         // Redirect to dashboard after successful payment
         setTimeout(() => {
-          window.location.href = `/dashboard?plan=${planId}&order=${result.orderId}`;
+          window.location.href = `/dashboard?plan=${planId}&subscription=${result.orderId}`;
         }, 2000);
       } else {
         // Handle cancellation vs actual error differently
-        if (result.error === 'Payment cancelled') {
+        if (result.error === 'Payment cancelled' || result.error?.includes('cancelled')) {
+          setPaymentStatus('idle');
+          setPaymentMessage('');
+        } else if (result.error?.includes('redirecting') || result.error?.includes('Redirecting')) {
+          // Don't show error for redirects (like signup redirect)
           setPaymentStatus('idle');
           setPaymentMessage('');
         } else {
@@ -69,9 +93,10 @@ export function Pricing({ showHeader = true }: PricingProps) {
           setPaymentMessage(result.error || 'Payment failed. Please try again.');
         }
       }
-    } catch {
+    } catch (error) {
+      console.error('Subscription error:', error);
       setPaymentStatus('error');
-      setPaymentMessage('Something went wrong. Please try again.');
+      setPaymentMessage(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
     } finally {
       setLoadingPlan(null);
     }

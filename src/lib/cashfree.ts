@@ -211,16 +211,21 @@ export async function initializeCashfreeCheckout(
     return { success: false, error: 'Payment gateway not initialized properly' };
   }
 
-  // Get plan details
+  // Get plan details and validate
   const plan = PRICING_PLANS.find((p) => p.id === planId);
   if (!plan) {
-    return { success: false, error: 'Invalid plan selected' };
+    return { success: false, error: `Invalid plan selected. Available plans: ${PRICING_PLANS.filter(p => !p.contactUs && p.price !== null).map(p => p.name).join(', ')}` };
   }
 
   // If Enterprise plan (contactUs), redirect to contact page
   if (plan.contactUs || plan.price === null) {
     window.location.href = '/contact';
     return { success: false, error: 'Enterprise plan requires contacting sales' };
+  }
+
+  // Validate plan has valid price
+  if (typeof plan.price !== 'number' || plan.price <= 0) {
+    return { success: false, error: 'Invalid pricing for selected plan' };
   }
 
   // Get clinicId from userInfo - it should be passed from the component
@@ -231,11 +236,12 @@ export async function initializeCashfreeCheckout(
   // For now, we'll require clinicId to be passed, but you might want to create a temporary clinic
   if (!clinicId) {
     console.warn('No clinicId provided. For new subscriptions, clinic will be created after payment.');
-    // Option 1: Create a temporary clinic ID that will be linked later
-    // Option 2: Require clinic creation before subscription (current approach)
+    // For new users signing up, redirect to signup page with plan selection
+    const signupUrl = `/signup?plan=${planId}`;
+    window.location.href = signupUrl;
     return {
       success: false,
-      error: 'Clinic ID is required. Please complete clinic setup first.',
+      error: 'Please complete signup first. Redirecting...',
     };
   }
 

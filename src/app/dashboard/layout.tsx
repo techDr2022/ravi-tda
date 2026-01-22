@@ -25,6 +25,7 @@ import {
   HelpCircle,
   Loader2,
 } from 'lucide-react';
+import { usePlanFeatures, PlanFeature } from '@/hooks/usePlanFeatures';
 
 /**
  * Dashboard Layout - Protected dashboard with sidebar navigation
@@ -38,6 +39,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { data: session, status } = useSession();
+  const planFeatures = usePlanFeatures();
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -117,16 +119,22 @@ export default function DashboardLayout({
     return null;
   }
 
+  // Navigation items with plan feature requirements
   const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
-    { href: '/dashboard/appointments', label: 'Appointments', icon: Calendar },
-    { href: '/dashboard/schedule', label: 'Schedule', icon: CalendarClock },
-    { href: '/dashboard/patients', label: 'Patients', icon: Users },
-    { href: '/dashboard/teleconsult', label: 'Teleconsult', icon: Video },
-    { href: '/dashboard/payments', label: 'Payments', icon: CreditCard },
-    { href: '/dashboard/reviews', label: 'Reviews', icon: Star },
-    { href: '/dashboard/whatsapp', label: 'WhatsApp', icon: MessageCircle },
-  ];
+    { href: '/dashboard', label: 'Dashboard', icon: BarChart3, requiredFeature: null },
+    { href: '/dashboard/appointments', label: 'Appointments', icon: Calendar, requiredFeature: null },
+    { href: '/dashboard/schedule', label: 'Schedule', icon: CalendarClock, requiredFeature: null },
+    { href: '/dashboard/patients', label: 'Patients', icon: Users, requiredFeature: null },
+    { href: '/dashboard/teleconsult', label: 'Teleconsult', icon: Video, requiredFeature: PlanFeature.TELECONSULTATION },
+    { href: '/dashboard/payments', label: 'Payments', icon: CreditCard, requiredFeature: PlanFeature.SECURE_PAYMENTS },
+    { href: '/dashboard/reviews', label: 'Reviews', icon: Star, requiredFeature: PlanFeature.REVIEW_REMINDERS },
+    { href: '/dashboard/whatsapp', label: 'WhatsApp', icon: MessageCircle, requiredFeature: null },
+    { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3, requiredFeature: PlanFeature.ANALYTICS },
+  ].filter(item => {
+    // Filter out items that require features not available in current plan
+    if (item.requiredFeature === null) return true;
+    return planFeatures.hasFeature(item.requiredFeature);
+  });
 
   const bottomNavItems = [
     { href: '/dashboard/settings', label: 'Settings', icon: Settings },

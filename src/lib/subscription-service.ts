@@ -3,6 +3,8 @@
  * Client-side functions for managing subscriptions
  */
 
+import { PRICING_PLANS } from './constants';
+
 export interface SubscriptionResponse {
   subscriptionId: string;
   subscriptionToken: string;
@@ -41,6 +43,21 @@ export interface SubscriptionStatus {
 }
 
 /**
+ * Validate plan ID against available pricing plans
+ */
+export function validatePlanId(planId: string): boolean {
+  const plan = PRICING_PLANS.find((p) => p.id === planId);
+  return !!plan && !plan.contactUs && plan.price !== null;
+}
+
+/**
+ * Get plan details by ID
+ */
+export function getPlanDetails(planId: string) {
+  return PRICING_PLANS.find((p) => p.id === planId);
+}
+
+/**
  * Create a subscription
  */
 export async function createSubscription(
@@ -49,6 +66,15 @@ export async function createSubscription(
   userInfo?: { name?: string; email?: string; phone?: string }
 ): Promise<SubscriptionResponse> {
   console.log('Creating subscription for plan:', planId, 'clinic:', clinicId);
+
+  // Validate plan ID before making API call
+  if (!validatePlanId(planId)) {
+    const plan = getPlanDetails(planId);
+    if (plan?.contactUs || plan?.price === null) {
+      throw new Error('Enterprise plan requires contacting sales. Please use the Contact Sales option.');
+    }
+    throw new Error(`Invalid plan selected. Available plans: ${PRICING_PLANS.filter(p => !p.contactUs && p.price !== null).map(p => p.name).join(', ')}`);
+  }
 
   const response = await fetch('/api/subscriptions/create', {
     method: 'POST',
